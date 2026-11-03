@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasterClass NVDA - Guide Interactif en 30 Paliers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nvda: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            800: '#166534',
+                            900: '#14532d',
+                            accent: '#38bdf8',
+                            darkbg: '#0f172a',
+                            darkcard: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Styles d'accessibilité et focus visibles */
+        *:focus-visible {
+            outline: 3px solid #38bdf8 !important;
+            outline-offset: 3px !important;
+        }
+        .kbd-badge {
+            background-color: #334155;
+            color: #f8fafc;
+            border: 1px solid #64748b;
+            border-bottom-width: 3px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigation / Header Accessible -->
+    <header role="banner" class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 backdrop-blur bg-opacity-90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-emerald-600 text-white rounded-lg font-bold text-xl" aria-hidden="true">
+                    <i class="fa-solid font-mono">&lt;NVDA&gt;</i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">NVDA Academy</h1>
+                    <p class="text-xs text-slate-400">Formation complète au lecteur d'écran en 30 paliers</p>
+                </div>
+            </div>
+
+            <!-- Contrôles globaux -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Selecteur de mode Clavier -->
+                <div class="bg-slate-800 p-1 rounded-lg flex border border-slate-700" role="radiogroup" aria-label="Disposition de clavier NVDA">
+                    <button id="btn-desktop" onclick="setLayout('desktop')" role="radio" aria-checked="true" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 text-white transition">
+                        <i class="fa-solid fa-desktop mr-1" aria-hidden="true"></i> Clavier Bureau
+                    </button>
+                    <button id="btn-laptop" onclick="setLayout('laptop')" role="radio" aria-checked="false" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white transition">
+                        <i class="fa-solid fa-laptop mr-1" aria-hidden="true"></i> Clavier Portable
+                    </button>
+                </div>
+
+                <!-- Réinitialisation progression -->
+                <button onclick="resetProgress()" class="px-3 py-1.5 text-xs text-rose-400 hover:text-rose-300 border border-rose-900/50 hover:bg-rose-950/40 rounded-lg transition" title="Réinitialiser la progression">
+                    <i class="fa-solid fa-rotate-left mr-1" aria-hidden="true"></i> Réinitialiser
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Bar de progression globale -->
+    <section aria-label="Progression du cours" class="bg-slate-900/80 border-b border-slate-800 py-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center text-sm font-semibold mb-2">
+                <span id="progress-text" class="text-emerald-400">Progression : 0 / 30 Paliers validés (0%)</span>
+                <span class="text-slate-400 text-xs" id="layout-indicator">Mode actuel : Clavier Bureau (NVDA = Touche Insert)</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div id="progress-bar" class="bg-gradient-to-r from-emerald-500 to-sky-400 h-full w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Zone principale -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+
+        <!-- Barre latérale de navigation / Filtres -->
+        <aside class="w-full lg:w-80 flex-shrink-0 space-y-6">
+            <!-- Recherche -->
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-lg">
+                <label for="search-input" class="block text-sm font-semibold text-slate-200 mb-2">
+                    <i class="fa-solid fa-magnifying-glass text-emerald-400 mr-1" aria-hidden="true"></i> Rechercher un raccourci ou concept
+                </label>
+                <input type="text" id="search-input" onkeyup="filterLevels()" placeholder="Ex: Titres, NVDA+F7, Voix, Tableaux..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none">
+            </div>
+
+            <!-- Sommaire / Accès rapide -->
+            <nav aria-label="Sommaire des paliers" class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-lg max-h-[calc(100vh-280px)] overflow-y-auto">
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Paliers d'apprentissage</h2>
+                <ul id="sidebar-list" class="space-y-1 text-sm">
+                    <!-- Généré dynamiquement en JS -->
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Zone des Paliers / Contenu principal -->
+        <section class="flex-grow space-y-8" id="levels-container">
+            <!-- Les 30 paliers seront générés ici en Javascript -->
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 mt-12 text-center text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Guide d'apprentissage NVDA interactif - Conçu pour l'accessibilité web et l'auto-formation autonome.</p>
+            <p class="text-xs text-slate-500 mt-1">Compatible NVDA 2024.x+ | Touche NVDA = <kbd class="kbd-badge">Insert</kbd> (Bureau) ou <kbd class="kbd-badge">Verr.Maj</kbd> (Portable)</p>
+        </div>
+    </footer>
+
+    <!-- LOGIQUE JAVASCRIPT COMPLET DU GUIDE -->
+    <script>
+        // Data complète des 30 paliers NVDA
+        const levelsData = [
+            {
+                id: 1,
+                title: "1. Prise en main & Commandes de base",
+                desc: "Découvrez les deux commandes vitales pour prendre le contrôle du flux vocal de NVDA.",
+                usage: "Utile lorsque NVDA parle trop vite ou lit un texte trop long dont vous n'avez pas besoin.",
+                desktopKbd: ["Ctrl : Interrompre la parole", "NVDA + S : Basculer mode parole (Parole, Désactivé, Beeps)"],
+                laptopKbd: ["Ctrl : Interrompre la parole", "Verr.Maj + S : Basculer mode parole"],
+                exerciseText: "Testez l'interruption : Cliquez ci-dessous pour lancer la lecture d'un long texte, puis appuyez sur la touche Ctrl de votre clavier pour couper immédiatement la voix.",
+                interactiveType: "stop-speech"
+            },
+            {
+                id: 2,
+                title: "2. Navigation de base & Lecture de texte",
+                desc: "Apprenez à explorer un texte caractère par caractère et mot par mot.",
+                usage: "Relecture fine de courriels, vérification de l'orthographe ou d'une adresse email.",
+                desktopKbd: ["Flèche Gauche / Droite : Caractère par caractère", "Ctrl + Flèche Gauche / Droite : Mot par mot", "Pavé Num 2 (ou NVDA+C en portable) : Annoncer la lettre courante"],
+                laptopKbd: ["Flèche Gauche / Droite : Caractère par caractère", "Ctrl + Flèche Gauche / Droite : Mot par mot", "Verr.Maj + C : Épeler le caractère courant"],
+                exerciseText: "Entraînez-vous à vous déplacer mot par mot dans cette zone de texte avec Ctrl+Flèches :",
+                interactiveType: "text-nav",
+                sampleText: "Le lecteur d'écran NVDA permet une autonomie numérique totale."
+            },
+            {
+                id: 3,
+                title: "3. Lecture continue & Contrôle fin",
+                desc: "Relire tout un document d'une seule traite ou connaître le titre de l'application active.",
+                usage: "Lire un long article ou vérifier sur quelle fenêtre Windows votre focus est positionné.",
+                desktopKbd: ["NVDA + Flèche Bas : Lire à partir du curseur", "NVDA + T : Annoncer le titre de la fenêtre active"],
+                laptopKbd: ["Verr.Maj + A : Lire à partir du curseur", "Verr.Maj + T : Annoncer le titre de la fenêtre active"],
+                exerciseText: "Testez la commande d'annonce du titre de la fenêtre active.",
+                interactiveType: "window-title"
+            },
+            {
+                id: 4,
+                title: "4. Modification des paramètres de la voix",
+                desc: "Ajuster à la volée la vitesse, le volume, la hauteur et le synthétiseur de voix.",
+                usage: "Accélérer le débit vocal quand vous gagnez en habileté ou changer de voix.",
+                desktopKbd: ["NVDA + Ctrl + Flèche Gauche/Droite : Choisir la règle (Vitesse, Hauteur, Volume)", "NVDA + Ctrl + Flèche Haut/Bas : Modifier la valeur de la règle choisie"],
+                laptopKbd: ["Verr.Maj + Ctrl + Flèche Gauche/Droite : Sélectionner le paramètre", "Verr.Maj + Ctrl + Flèche Haut/Bas : Ajuster la valeur"],
+                exerciseText: "Simulez le changement de débit vocal avec les commandes clavier.",
+                interactiveType: "voice-settings"
+            },
+            {
+                id: 5,
+                title: "5. Navigation dans les fenêtres & Boîtes de dialogue",
+                desc: "Se déplacer parmi les boutons, cases à cocher et champs dans une fenêtre Windows.",
+                usage: "Remplir un formulaire, valider des paramètres système.",
+                desktopKbd: ["Tab : Éléments suivant", "Maj + Tab : Éléments précédent", "NVDA + Tab : Annoncer l'élément ayant le focus actuel"],
+                laptopKbd: ["Tab : Éléments suivant", "Maj + Tab : Éléments précédent", "Verr.Maj + Tab : Annoncer l'élément ayant le focus actuel"],
+                exerciseText: "Utilisez uniquement Tab et Maj+Tab pour parcourir ces contrôles de formulaire :",
+                interactiveType: "dialog-form"
+            },
+            {
+                id: 6,
+                title: "6. Curseur système vs Curseur de revue",
+                desc: "Comprendre la différence entre le point d'insertion du texte (Système) et le regard de NVDA (Revue).",
+                usage: "Explorer des zones d'écran non accessibles via la touche Tabulation.",
+                desktopKbd: ["NVDA + Maj + Pavé Num 2 : Amener le curseur système au curseur de revue", "NVDA + Maj + Pavé Num 8 : Amener la revue au curseur système"],
+                laptopKbd: ["Verr.Maj + Maj + J : Synchroniser les curseurs"],
+                exerciseText: "Compréhension conceptuelle du double curseur NVDA.",
+                interactiveType: "cursors-concept"
+            },
+            {
+                id: 7,
+                title: "7. Pavé numérique & Mode Revue d'écran",
+                desc: "Explorer visuellement et physiquement l'écran sans déplacer votre curseur d'écriture.",
+                usage: "Lire des messages d'erreur éphémères ou des barres d'état non sélectionnables.",
+                desktopKbd: ["Pavé Num 7 / 8 / 9 : Ligne précédente / courante / suivante", "Pavé Num 4 / 5 / 6 : Mot précédent / courant / suivant", "Pavé Num 1 / 2 / 3 : Caractère précédent / courant / suivant"],
+                laptopKbd: ["Verr.Maj + U / I / O : Ligne précédente / courante / suivante", "Verr.Maj + J / K / L : Mot précédent / courant / suivant"],
+                exerciseText: "Lisez ce bloc de texte figé sans déplacer le focus.",
+                interactiveType: "screen-review"
+            },
+            {
+                id: 8,
+                title: "8. Navigation Web 1 : Mode Navigation vs Mode Formulaire",
+                desc: "Comprendre les 2 modes fondamentaux dans les navigateurs web.",
+                usage: "Passer de la lecture fluide (Mode Navigation) à la saisie de texte dans un champ (Mode Formulaire).",
+                desktopKbd: ["NVDA + Espace : Basculer entre le Mode Navigation et le Mode Formulaire", "Échap : Sortir du mode formulaire", "Entrée : Activer un bouton ou entrer dans un champ"],
+                laptopKbd: ["Verr.Maj + Espace : Basculer entre les modes web"],
+                exerciseText: "Basculez manuellement entre le Mode Navigation et le Mode Formulaire dans cette zone.",
+                interactiveType: "web-modes"
+            },
+            {
+                id: 9,
+                title: "9. Navigation Web 2 : Touches rapides pour la structure",
+                desc: "Sauter de titre en titre ou de liste en liste pour parcourir une page web très rapidement.",
+                usage: "Parcourir un long article de presse ou une page Wikipédia en quelques secondes.",
+                desktopKbd: ["H ou T : Titre suivant (Maj+H pour précédent)", "1 à 6 : Titre de niveau 1 à 6", "L : Liste suivante", "I : Élément de liste suivant"],
+                laptopKbd: ["Idem en disposition portable"],
+                exerciseText: "Naviguez entre les titres ci-dessous avec la touche 'H' ou 'T' :",
+                interactiveType: "headings-nav"
+            },
+            {
+                id: 10,
+                title: "10. Navigation Web 3 : Liens, Boutons et Formulaires",
+                desc: "Sauter directement sur les éléments interactifs de la page web.",
+                usage: "Aller directement à la zone de recherche ou trouver les liens de téléchargement.",
+                desktopKbd: ["K : Lien suivant", "B : Bouton suivant", "F : Champ de formulaire suivant", "E : Zone d'édition de texte suivante"],
+                laptopKbd: ["Idem en disposition portable"],
+                exerciseText: "Utilisez 'B' pour trouver le bouton de validation ci-dessous :",
+                interactiveType: "interactive-nav"
+            },
+            {
+                id: 11,
+                title: "11. Navigation Web 4 : Tableaux et Landmarks (Repères)",
+                desc: "Naviguer dans les grandes sections d'une page (En-tête, Menu, Pied de page) et dans les tableaux.",
+                usage: "Accéder directement au contenu principal d'un site web.",
+                desktopKbd: ["D ou M : Landmark/Repère suivant (Bannière, Main, Navigation)", "T : Tableau suivant", "Ctrl + Alt + Flèches : Naviguer dans les cellules du tableau"],
+                laptopKbd: ["Ctrl + Alt + Flèches : Déplacement dans le tableau"],
+                exerciseText: "Explorez les cellules de ce tableau avec Ctrl+Alt+Flèches :",
+                interactiveType: "table-nav"
+            },
+            {
+                id: 12,
+                title: "12. La Liste des Éléments (NVDA + F7)",
+                desc: "Afficher le menu récapitulatif de tous les éléments d'une page web.",
+                usage: "Obtenir une vue globale de tous les liens ou titres d'une page très complexe.",
+                desktopKbd: ["NVDA + F7 : Ouvrir la liste des éléments", "Alt + L / T / B / M : Basculer entre Liens, Titres, Boutons, Repères"],
+                laptopKbd: ["Verr.Maj + F7 : Ouvrir la liste des éléments"],
+                exerciseText: "Simulateur de dialogue NVDA+F7.",
+                interactiveType: "elements-list"
+            },
+            {
+                id: 13,
+                title: "13. Lecture et navigation dans Word / Traitement de texte",
+                desc: "Connaître le style, la police, la taille et les attributs du texte.",
+                usage: "Vérifier la bonne mise en forme de vos documents administratifs.",
+                desktopKbd: ["NVDA + F : Annoncer le formatage du texte (police, taille, couleur)", "NVDA + C : Annoncer les commentaires"],
+                laptopKbd: ["Verr.Maj + F : Annoncer le formatage"],
+                exerciseText: "Découvrez la mise en forme appliquée à ce mot :",
+                interactiveType: "formatting-check"
+            },
+            {
+                id: 14,
+                title: "14. Gestion des tableaux complexes dans Word et Excel",
+                desc: "Naviguer efficacement dans des feuilles de calcul et des tableaux de données.",
+                usage: "Consulter la bonne en-tête de colonne tout en se déplaçant dans une grille Excel.",
+                desktopKbd: ["NVDA + Maj + C : Définir la ligne comme en-tête de colonne", "Ctrl + Alt + Flèches : Se déplacer entre les cellules"],
+                laptopKbd: ["Verr.Maj + Maj + C : Définir en-tête de colonne"],
+                exerciseText: "Simulateur de feuille de calcul accessible.",
+                interactiveType: "excel-sim"
+            },
+            {
+                id: 15,
+                title: "15. Lecture et gestion des e-mails (Outlook / Webmail)",
+                desc: "Consulter rapidement les informations clés d'un message électronique.",
+                usage: "Vérifier qui est l'expéditeur sans relire tout l'en-tête.",
+                desktopKbd: ["NVDA + Maj + H : Annoncer l'expéditeur et le sujet", "NVDA + Maj + A : Annoncer les pièces jointes"],
+                laptopKbd: ["Verr.Maj + Maj + H : Annoncer l'expéditeur"],
+                exerciseText: "Zone d'essai de lecture rapide de mail.",
+                interactiveType: "email-reader"
+            },
+            {
+                id: 16,
+                title: "16. Simulation de la souris & Déplacement physiquement",
+                desc: "Déplacer et cliquer avec la souris en utilisant uniquement le clavier.",
+                usage: "Cliquer sur un bouton récalcitrant non accessible au clavier.",
+                desktopKbd: ["Pavé Num Slash (/) : Clic gauche de la souris", "Pavé Num Étoile (*) : Clic droit de la souris", "NVDA + Pavé Num Slash : Déplacer la souris sur le focus système"],
+                laptopKbd: ["Verr.Maj + [ : Clic gauche", "Verr.Maj + ] : Clic droit"],
+                exerciseText: "Simulez le survol et le clic de souris sur cet objet :",
+                interactiveType: "mouse-simulation"
+            },
+            {
+                id: 17,
+                title: "17. Dictionnaires de prononciation & Symboles",
+                desc: "Régler la quantité de ponctuation lue et corriger la prononciation des mots.",
+                usage: "Lire du code informatique (ponctué) ou corriger l'accentuation d'un nom propre.",
+                desktopKbd: ["NVDA + P : Changer le niveau de ponctuation (Aucune, Quelques, Toutes)"],
+                laptopKbd: ["Verr.Maj + P : Niveau de ponctuation"],
+                exerciseText: "Testez l'impact du niveau de ponctuation sur ce texte d'exemple :",
+                interactiveType: "punctuation-level"
+            },
+            {
+                id: 18,
+                title: "18. Configuration des profils de déclenchement",
+                desc: "Créer des réglages vocaux personnalisés s'activant automatiquement selon l'application.",
+                usage: "Avoir une voix très rapide dans le navigateur web et une voix lente et précise dans VS Code.",
+                desktopKbd: ["NVDA + Ctrl + P : Menu de configuration", "NVDA + Ctrl + C : Sauvegarder la configuration actuelle"],
+                laptopKbd: ["Verr.Maj + Ctrl + P : Menu de configuration"],
+                exerciseText: "Comprendre le concept de profil applicatif.",
+                interactiveType: "profiles-concept"
+            },
+            {
+                id: 19,
+                title: "19. Gestion des extensions (Add-ons NVDA)",
+                desc: "Enrichir NVDA avec des fonctionnalités avancées créées par la communauté.",
+                usage: "Ajouter la vocalisation de l'horloge, un traducteur instantané ou des OCR.",
+                desktopKbd: ["NVDA + N > Outils > Gestionnaire d'extensions"],
+                laptopKbd: ["Verr.Maj + N > Outils > Gestionnaire d'extensions"],
+                exerciseText: "Simulation du gestionnaire d'extensions NVDA.",
+                interactiveType: "addons-sim"
+            },
+            {
+                id: 20,
+                title: "20. Outils de développement & Inspecteur d'objets",
+                desc: "Inspecter la structure de l'interface graphique Windows et exécuter des scripts Python.",
+                usage: "Diagnostiquer les problèmes d'accessibilité d'un logiciel.",
+                desktopKbd: ["NVDA + F1 : Ouvrir le journal / Console Python de NVDA", "NVDA + Pavé Num 5 : Annoncer l'objet courant du navigateur"],
+                laptopKbd: ["Verr.Maj + F1 : Journal de développement"],
+                exerciseText: "Test d'inspection de propriétés d'un élément d'interface.",
+                interactiveType: "dev-inspector"
+            },
+            {
+                id: 21,
+                title: "21. Utilisation avec afficheurs Braille",
+                desc: "Configurer la sortie braille éphémère et les touches de routage du curseur.",
+                usage: "Lecture silencieuse ou contrôle rigoureux de l'orthographe.",
+                desktopKbd: ["NVDA + Ctrl + B : Menu des paramètres Braille"],
+                laptopKbd: ["Verr.Maj + Ctrl + B : Paramètres Braille"],
+                exerciseText: "Aperçu de la traduction en braille informatique.",
+                interactiveType: "braille-preview"
+            },
+            {
+                id: 22,
+                title: "22. Navigation avancée dans le système Windows",
+                desc: "Accéder instantanément aux éléments système comme la zone de notification ou le bureau.",
+                usage: "Lire les icônes de la barre des tâches ou les notifications Windows.",
+                desktopKbd: ["NVDA + B : Lire toute la fenêtre active ou la zone de notification", "Windows + D : Réduire tout et aller au bureau"],
+                laptopKbd: ["Verr.Maj + B : Lire la fenêtre/systray"],
+                exerciseText: "Test d'annonce de la zone de notification.",
+                interactiveType: "systray-read"
+            },
+            {
+                id: 23,
+                title: "23. Mode Sommeil / Désactivation temporaire",
+                desc: "Désactiver temporairement les fonctions de NVDA pour une application spécifique.",
+                usage: "Jouer à un jeu vidéo sonore ou utiliser une machine virtuelle avec son propre lecteur d'écran.",
+                desktopKbd: ["NVDA + Maj + S : Activer/Désactiver le Mode Sommeil"],
+                laptopKbd: ["Verr.Maj + Maj + S : Activer/Désactiver le Mode Sommeil"],
+                exerciseText: "Basculez le mode sommeil pour désactiver NVDA sur cette zone.",
+                interactiveType: "sleep-mode"
+            },
+            {
+                id: 24,
+                title: "24. Recherche de texte dans un document / page",
+                desc: "Chercher un mot ou une phrase spécifique dans une page web ou un document.",
+                usage: "Trouver rapidement une occurrence spécifique dans un rapport de 100 pages.",
+                desktopKbd: ["NVDA + Ctrl + F : Ouvrir la boîte de dialogue de recherche NVDA", "NVDA + F3 : Rechercher l'occurrence suivante"],
+                laptopKbd: ["Verr.Maj + Ctrl + F : Boîte de recherche", "Verr.Maj + F3 : Occurrence suivante"],
+                exerciseText: "Utilisez le champ ci-dessous pour rechercher un mot clé :",
+                interactiveType: "search-text"
+            },
+            {
+                id: 25,
+                title: "25. Copier la dernière phrase lue dans le presse-papier",
+                desc: "Récupérer sous forme de texte ce que NVDA vient de vocaliser.",
+                usage: "Copier un message d'erreur ou une information affichée à l'écran sans pouvoir la sélectionner.",
+                desktopKbd: ["NVDA + F12 (ou NVDA+C en mode revue) : Copier la dernière phrase lue dans le presse-papier"],
+                laptopKbd: ["Verr.Maj + F12 : Copier dernière parole"],
+                exerciseText: "Testez la récupération du dernier texte vocalisé.",
+                interactiveType: "copy-speech"
+            },
+            {
+                id: 26,
+                title: "26. Maîtriser la disposition pour ordinateurs portables",
+                desc: "Apprendre à utiliser la touche Verrouillage Majuscule (CapsLock) comme touche NVDA.",
+                usage: "Manipuler NVDA de manière ergonomique sans avoir de pavé numérique dédié.",
+                desktopKbd: ["Touche NVDA = Insert"],
+                laptopKbd: ["Touche NVDA = Verrouillage Majuscule (CapsLock)"],
+                exerciseText: "Test de bascule de disposition et repérage de la touche NVDA.",
+                interactiveType: "laptop-layout"
+            },
+            {
+                id: 27,
+                title: "27. Personnalisation avancée des gestes d'entrée",
+                desc: "Redéfinir n'importe quel raccourci clavier de NVDA selon vos préférences personnelles.",
+                usage: "Assigner une touche facile pour une fonction que vous utilisez en permanence.",
+                desktopKbd: ["NVDA + N > Préférences > Gestes d'entrée"],
+                laptopKbd: ["Verr.Maj + N > Préférences > Gestes d'entrée"],
+                exerciseText: "Simulateur de réassignation de touches.",
+                interactiveType: "gestures-sim"
+            },
+            {
+                id: 28,
+                title: "28. Résolution de problèmes & Journal de débogage",
+                desc: "Consulter les journaux NVDA pour comprendre pourquoi un bug ou un blocage survient.",
+                usage: "Signaler un bug aux développeurs NVDA avec un extrait du journal technique.",
+                desktopKbd: ["NVDA + N > Outils > Visualiser le journal"],
+                laptopKbd: ["Verr.Maj + N > Outils > Visualiser le journal"],
+                exerciseText: "Consultez un extrait simulé du journal de débogage NVDA.",
+                interactiveType: "debug-log"
+            },
+            {
+                id: 29,
+                title: "29. Remplissage de formulaires complexes et Modales Web",
+                desc: "Apprendre à gérer les fenêtres surgissantes (modales), listes déroulantes et champs dates.",
+                usage: "Réserver un billet de train ou faire des démarches en ligne complexes.",
+                desktopKbd: ["Espace : Ouvrir une liste déroulante ou cocher une case", "Flèches Haut/Bas : Naviguer dans une liste déroulante", "Échap : Fermer une fenêtre modale"],
+                laptopKbd: ["Idem"],
+                exerciseText: "Complétez cette boîte modale complexe exclusivement au clavier :",
+                interactiveType: "complex-modal"
+            },
+            {
+                id: 30,
+                title: "30. Master Test Final : Défi pratique global",
+                desc: "Testez l'ensemble de vos compétences NVDA sur une épreuve réelle combinant 10 actions.",
+                usage: "Valider officiellement votre maîtrise complète de NVDA.",
+                desktopKbd: ["Combinaison de tous les raccourcis des paliers 1 à 29"],
+                laptopKbd: ["Combinaison de tous les raccourcis des paliers 1 à 29"],
+                exerciseText: "Répondez aux questions et effectuez la séquence d'actions demandée.",
+                interactiveType: "master-test"
+            }
+        ];
+
+        // État global de l'application
+        let currentLayout = 'desktop'; // 'desktop' ou 'laptop'
+        let completedLevels = JSON.parse(localStorage.getItem('nvda_completed_levels') || '[]');
+
+        // Initialisation de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSidebar();
+            renderLevels();
+            updateProgress();
+        });
+
+        // Bascule de la disposition clavier
+        function setLayout(layout) {
+            currentLayout = layout;
+            document.getElementById('btn-desktop').setAttribute('aria-checked', layout === 'desktop');
+            document.getElementById('btn-laptop').setAttribute('aria-checked', layout === 'laptop');
+
+            if (layout === 'desktop') {
+                document.getElementById('btn-desktop').className = "px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 text-white transition";
+                document.getElementById('btn-laptop').className = "px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white transition";
+                document.getElementById('layout-indicator').textContent = "Mode actuel : Clavier Bureau (NVDA = Touche Insert)";
+            } else {
+                document.getElementById('btn-laptop').className = "px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 text-white transition";
+                document.getElementById('btn-desktop').className = "px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white transition";
+                document.getElementById('layout-indicator').textContent = "Mode actuel : Clavier Portable (NVDA = Touche Verrouillage Majuscule / CapsLock)";
+            }
+
+            renderLevels();
+        }
+
+        // Rendu de la barre latérale
+        function renderSidebar() {
+            const list = document.getElementById('sidebar-list');
+            list.innerHTML = levelsData.map(level => `
+                <li>
+                    <a href="#palier-${level.id}" class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 transition text-slate-300 hover:text-white text-xs">
+                        <span class="truncate">${level.title}</span>
+                        ${completedLevels.includes(level.id) ? '<i class="fa-solid fa-circle-check text-emerald-400 ml-1" aria-hidden="true"></i>' : ''}
+                    </a>
+                </li>
+            `).join('');
+        }
+
+        // Rendu des paliers dans la zone principale
+        function renderLevels() {
+            const container = document.getElementById('levels-container');
+            container.innerHTML = levelsData.map(level => {
+                const isCompleted = completedLevels.includes(level.id);
+                const shortcuts = currentLayout === 'desktop' ? level.desktopKbd : level.laptopKbd;
+
+                return `
+                    <article id="palier-${level.id}" class="bg-slate-900 border ${isCompleted ? 'border-emerald-800' : 'border-slate-800'} rounded-2xl p-6 shadow-xl transition-all">
+                        <!-- En-tête du Palier -->
+                        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800/50">Palier ${level.id} / 30</span>
+                                <h2 class="text-xl font-extrabold text-white mt-2">${level.title}</h2>
+                                <p class="text-slate-300 text-sm mt-1">${level.desc}</p>
+                            </div>
+                            
+                            <!-- Case à cocher de validation -->
+                            <label class="flex items-center space-x-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+                                <input type="checkbox" onchange="toggleLevel(${level.id})" ${isCompleted ? 'checked' : ''} class="w-4 h-4 text-emerald-600 rounded border-slate-700 focus:ring-emerald-500 bg-slate-900">
+                                <span class="text-xs font-semibold ${isCompleted ? 'text-emerald-400' : 'text-slate-400'}">
+                                    ${isCompleted ? 'Palier Validé' : 'Marquer comme validé'}
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Cas d'usage réel -->
+                        <div class="mb-4 bg-slate-950/50 p-3.5 rounded-xl border border-slate-800/80 text-xs">
+                            <span class="font-bold text-sky-400"><i class="fa-solid fa-lightbulb mr-1"></i> Cas d'usage réel :</span>
+                            <span class="text-slate-300 ml-1">${level.usage}</span>
+                        </div>
+
+                        <!-- Liste des Raccourcis Clavier -->
+                        <div class="mb-6">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                                Raccourcis Clavier (${currentLayout === 'desktop' ? 'Disposition Bureau' : 'Disposition Portable'})
+                            </h3>
+                            <ul class="space-y-1.5">
+                                ${shortcuts.map(s => {
+                                    const parts = s.split(':');
+                                    return `
+                                        <li class="text-xs flex flex-wrap items-center gap-2 text-slate-200">
+                                            <span class="font-mono bg-slate-950 border border-slate-700 px-2 py-1 rounded text-sky-300 font-semibold">${parts[0]}</span>
+                                            ${parts[1] ? `<span>: ${parts[1]}</span>` : ''}
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ul>
+                        </div>
+
+                        <!-- Mini-Exercice Pratique Interactif -->
+                        <div class="bg-slate-950 rounded-xl border border-slate-800 p-4">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2 flex items-center">
+                                <i class="fa-solid fa-gamepad mr-2"></i> Mini-Exercice Pratique
+                            </h3>
+                            <p class="text-xs text-slate-300 mb-3">${level.exerciseText}</p>
+                            
+                            <!-- Contenu interactif selon type -->
+                            <div class="space-y-3">
+                                ${renderInteractiveModule(level)}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        // Génération du module interactif pour chaque palier
+        function renderInteractiveModule(level) {
+            switch(level.interactiveType) {
+                case 'stop-speech':
+                    return `
+                        <div class="space-y-2">
+                            <button onclick="simulateLongSpeech()" class="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold transition">
+                                <i class="fa-solid fa-volume-high mr-1"></i> Lancer la lecture continue simulated
+                            </button>
+                            <div id="speech-box" aria-live="assertive" class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-emerald-400 hidden">
+                                En attente...
+                            </div>
+                            <p class="text-[11px] text-slate-500">Astuce : Appuyez sur n'importe quelle touche pour simuler l'arrêt de la parole.</p>
+                        </div>
+                    `;
+
+                case 'text-nav':
+                    return `
+                        <textarea readonly class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 font-mono focus:border-emerald-500 focus:outline-none" rows="2">${level.sampleText}</textarea>
+                    `;
+
+                case 'window-title':
+                    return `
+                        <button onclick="alert('NVDA simule : Titre de la fenêtre = MasterClass NVDA - Guide Interactif')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-semibold">
+                            <i class="fa-solid fa-window-maximize mr-1"></i> Tester l'annonce du titre (NVDA+T)
+                        </button>
+                    `;
+
+                case 'voice-settings':
+                    return `
+                        <div class="flex flex-wrap gap-4 items-center bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <div class="text-xs">
+                                <span class="text-slate-400 block">Vitesse parole :</span>
+                                <span id="speech-rate-val" class="font-bold text-emerald-400">50%</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="adjustRate(-5)" class="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-xs text-slate-200 hover:bg-slate-700">- 5%</button>
+                                <button onclick="adjustRate(5)" class="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-xs text-slate-200 hover:bg-slate-700">+ 5%</button>
+                            </div>
+                        </div>
+                    `;
+
+                case 'dialog-form':
+                    return `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <div>
+                                <label for="form-ex-name" class="block text-[11px] text-slate-400 mb-1">Champ 1 : Nom</label>
+                                <input type="text" id="form-ex-name" placeholder="Tapez ici..." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200">
+                            </div>
+                            <div>
+                                <label for="form-ex-role" class="block text-[11px] text-slate-400 mb-1">Champ 2 : Rôle</label>
+                                <select id="form-ex-role" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200">
+                                    <option>Débutant NVDA</option>
+                                    <option>Utilisateur Intermédiaire</option>
+                                    <option>Expert / Formateur</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+
+                case 'headings-nav':
+                    return `
+                        <div class="space-y-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <h4 class="text-sm font-bold text-sky-400 border-b border-slate-800 pb-1" tabindex="0">Titre de Niveau 1 : Section principale</h4>
+                            <p class="text-xs text-slate-400">Contenu de la section principale...</p>
+                            <h5 class="text-xs font-bold text-emerald-400 mt-2 border-b border-slate-800 pb-1" tabindex="0">Sous-Titre de Niveau 2 : Sous-section</h5>
+                            <p class="text-xs text-slate-400">Contenu de la sous-section...</p>
+                        </div>
+                    `;
+
+                case 'interactive-nav':
+                    return `
+                        <div class="flex flex-wrap items-center gap-3 bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <a href="#palier-10" class="text-xs text-sky-400 underline hover:text-sky-300">Lien d'exemple NVDA</a>
+                            <button onclick="alert('Bouton activé avec succès !')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold">
+                                Bouton Cible (Touche B)
+                            </button>
+                        </div>
+                    `;
+
+                case 'table-nav':
+                    return `
+                        <div class="overflow-x-auto bg-slate-900 rounded-lg border border-slate-800">
+                            <table class="w-full text-xs text-left text-slate-300" role="table" aria-label="Tableau d'exemple NVDA">
+                                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px]">
+                                    <tr>
+                                        <th scope="col" class="px-3 py-2">Fonction</th>
+                                        <th scope="col" class="px-3 py-2">Bureau</th>
+                                        <th scope="col" class="px-3 py-2">Portable</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-slate-800">
+                                        <td class="px-3 py-2 font-semibold">Stopper parole</td>
+                                        <td class="px-3 py-2">Ctrl</td>
+                                        <td class="px-3 py-2">Ctrl</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 font-semibold">Menu NVDA</td>
+                                        <td class="px-3 py-2">NVDA + N</td>
+                                        <td class="px-3 py-2">Verr.Maj + N</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                case 'elements-list':
+                    return `
+                        <button onclick="showMockElementsList()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-300 rounded-lg text-xs font-semibold">
+                            <i class="fa-solid fa-list-ul mr-1"></i> Simuler le dialogue NVDA+F7
+                        </button>
+                        <div id="elements-list-modal" class="hidden mt-2 p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-1">
+                            <p class="font-bold text-emerald-400">--- Liste des Titres (NVDA+F7) ---</p>
+                            <p>1. Prise en main & Commandes de base</p>
+                            <p>2. Navigation de base & Lecture de texte</p>
+                            <p>3. Lecture continue & Contrôle fin</p>
+                        </div>
+                    `;
+
+                case 'formatting-check':
+                    return `
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                            <p class="text-xs">
+                                Texte normal - <span class="font-bold italic text-amber-400 underline" tabindex="0" title="Police: Segoe UI, 12pt, Gras, Italique, Souligné, Couleur: Ambre">Mot mis en forme spécifiquement</span>
+                            </p>
+                        </div>
+                    `;
+
+                case 'search-text':
+                    return `
+                        <div class="flex gap-2">
+                            <input type="text" id="search-sample" placeholder="Rechercher un mot dans ce palier..." class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 flex-grow">
+                            <button onclick="executeSearchSample()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold">Rechercher</button>
+                        </div>
+                        <p id="search-result" class="text-[11px] text-slate-400 mt-1"></p>
+                    `;
+
+                case 'complex-modal':
+                    return `
+                        <button onclick="toggleMockModal(true)" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold">
+                            <i class="fa-solid fa-window-restore mr-1"></i> Ouvrir une boîte modale Web
+                        </button>
+
+                        <div id="mock-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                            <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+                                <h3 id="modal-title" class="text-lg font-bold text-white">Formulaire de réservation modale</h3>
+                                <p class="text-xs text-slate-300">Utilisez la touche Tab pour naviguer et Échap pour fermer cette modale.</p>
+                                <div>
+                                    <label for="modal-input-1" class="block text-xs font-medium text-slate-400 mb-1">Date de départ</label>
+                                    <input type="date" id="modal-input-1" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-xs text-white">
+                                </div>
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="toggleMockModal(false)" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">Annuler (Échap)</button>
+                                    <button onclick="alert('Réservation effectuée !'); toggleMockModal(false)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold">Confirmer</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                case 'master-test':
+                    return `
+                        <div class="space-y-3 bg-slate-900 p-4 rounded-lg border border-slate-800 text-xs">
+                            <p class="font-bold text-emerald-400">Défi Final : Évaluation des connaissances</p>
+                            <div>
+                                <p class="text-slate-300 mb-1">1. Quelle touche interrompt immédiatement la parole NVDA ?</p>
+                                <div class="space-x-3">
+                                    <label class="cursor-pointer"><input type="radio" name="q1" value="a"> Espace</label>
+                                    <label class="cursor-pointer"><input type="radio" name="q1" value="b"> Ctrl</label>
+                                    <label class="cursor-pointer"><input type="radio" name="q1" value="c"> Alt</label>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-slate-300 mb-1">2. En navigation Web, quelle touche saut de titre en titre ?</p>
+                                <div class="space-x-3">
+                                    <label class="cursor-pointer"><input type="radio" name="q2" value="a"> K</label>
+                                    <label class="cursor-pointer"><input type="radio" name="q2" value="b"> T ou H</label>
+                                    <label class="cursor-pointer"><input type="radio" name="q2" value="c"> B</label>
+                                </div>
+                            </div>
+                            <button onclick="evaluateMasterTest()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs">
+                                Valider le Master Test
+                            </button>
+                            <p id="master-test-result" class="font-semibold text-xs mt-2"></p>
+                        </div>
+                    `;
+
+                default:
+                    return `
+                        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 text-xs text-slate-400 italic">
+                            Module d'exercice pratique prêt pour l'entraînement clavier NVDA.
+                        </div>
+                    `;
+            }
+        }
+
+        // Action de validation d'un palier
+        function toggleLevel(id) {
+            if (completedLevels.includes(id)) {
+                completedLevels = completedLevels.filter(l => l !== id);
+            } else {
+                completedLevels.push(id);
+            }
+            localStorage.setItem('nvda_completed_levels', JSON.stringify(completedLevels));
+            updateProgress();
+            renderSidebar();
+            renderLevels();
+        }
+
+        // Mise à jour de la barre de progression
+        function updateProgress() {
+            const count = completedLevels.length;
+            const percentage = Math.round((count / 30) * 100);
+            
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-text').textContent = `Progression : ${count} / 30 Paliers validés (${percentage}%)`;
+        }
+
+        // Réinitialisation globale
+        function resetProgress() {
+            if (confirm("Voulez-vous vraiment réinitialiser toute votre progression ?")) {
+                completedLevels = [];
+                localStorage.removeItem('nvda_completed_levels');
+                updateProgress();
+                renderSidebar();
+                renderLevels();
+            }
+        }
+
+        // Filtrer la liste des paliers par mot clé
+        function filterLevels() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filteredData = levelsData.filter(level => 
+                level.title.toLowerCase().includes(query) ||
+                level.desc.toLowerCase().includes(query) ||
+                level.usage.toLowerCase().includes(query) ||
+                level.desktopKbd.some(k => k.toLowerCase().includes(query)) ||
+                level.laptopKbd.some(k => k.toLowerCase().includes(query))
+            );
+
+            const container = document.getElementById('levels-container');
+            if (filteredData.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 bg-slate-900 border border-slate-800 rounded-2xl">Aucun palier ou raccourci ne correspond à votre recherche "${query}".</div>`;
+            } else {
+                // Rendu temporaire des éléments filtrés
+                container.innerHTML = filteredData.map(level => {
+                    const isCompleted = completedLevels.includes(level.id);
+                    const shortcuts = currentLayout === 'desktop' ? level.desktopKbd : level.laptopKbd;
+
+                    return `
+                        <article id="palier-${level.id}" class="bg-slate-900 border ${isCompleted ? 'border-emerald-800' : 'border-slate-800'} rounded-2xl p-6 shadow-xl">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                                <h2 class="text-xl font-bold text-white">${level.title}</h2>
+                                <span class="text-xs text-emerald-400">Palier ${level.id}</span>
+                            </div>
+                            <p class="text-slate-300 text-sm mb-4">${level.desc}</p>
+                            <div class="mb-4">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Raccourcis</h3>
+                                <ul class="space-y-1">
+                                    ${shortcuts.map(s => `<li class="text-xs text-slate-200 font-mono bg-slate-950 p-1.5 rounded border border-slate-800">${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Fonctions auxiliaires d'interaction
+        let speechInterval;
+        function simulateLongSpeech() {
+            const box = document.getElementById('speech-box');
+            box.classList.remove('hidden');
+            let count = 0;
+            const sentences = [
+                "NVDA est un lecteur d'écran gratuit et open source...",
+                "Il permet aux personnes aveugles et malvoyantes...",
+                "De naviguer de façon totalement autonome sous Windows...",
+                "Appuyez sur la touche Ctrl pour couper ce flux vocal !"
+            ];
+
+            clearInterval(speechInterval);
+            speechInterval = setInterval(() => {
+                box.textContent = sentences[count % sentences.length];
+                count++;
+            }, 1200);
+
+            // Écouteur global temporaire pour simuler la coupure avec Ctrl
+            const stopHandler = (e) => {
+                if (e.key === 'Control' || e.type === 'click') {
+                    clearInterval(speechInterval);
+                    box.textContent = "🔊 [PAROLE INTERROMPUE PAR LA TOUCHE CTRL]";
+                    box.classList.add('text-amber-400');
+                    window.removeEventListener('keydown', stopHandler);
+                }
+            };
+            window.addEventListener('keydown', stopHandler);
+        }
+
+        let currentRate = 50;
+        function adjustRate(delta) {
+            currentRate = Math.max(10, Math.min(100, currentRate + delta));
+            document.getElementById('speech-rate-val').textContent = `${currentRate}%`;
+        }
+
+        function showMockElementsList() {
+            document.getElementById('elements-list-modal').classList.toggle('hidden');
+        }
+
+        function executeSearchSample() {
+            const query = document.getElementById('search-sample').value;
+            const res = document.getElementById('search-result');
+            if (query) {
+                res.textContent = `NVDA simule : 3 occurrences trouvées pour "${query}". Appuyez sur NVDA+F3 pour aller à la suivante.`;
+            } else {
+                res.textContent = "Veuillez entrer un mot à chercher.";
+            }
+        }
+
+        function toggleMockModal(show) {
+            const modal = document.getElementById('mock-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function evaluateMasterTest() {
+            const q1 = document.querySelector('input[name="q1"]:checked')?.value;
+            const q2 = document.querySelector('input[name="q2"]:checked')?.value;
+            const res = document.getElementById('master-test-result');
+
+            if (q1 === 'b' && q2 === 'b') {
+                res.textContent = "🎉 Félicitations ! Réponses exactes. Vous avez maîtrisé les bases fondamentales de NVDA !";
+                res.className = "font-semibold text-xs mt-2 text-emerald-400";
+                if (!completedLevels.includes(30)) {
+                    toggleLevel(30);
+                }
+            } else {
+                res.textContent = "❌ Il y a des erreurs dans vos réponses. Révisez les paliers 1 et 9 puis réessayez !";
+                res.className = "font-semibold text-xs mt-2 text-rose-400";
+            }
+        }
+    </script>
+</body>
+</html>
